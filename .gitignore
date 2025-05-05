@@ -1,0 +1,4 @@
+env/*
+dr_project/_pycache_/*
+dr_app/_pycache_/*
+dr_app/diabetic_retinopathy_full_model.pth

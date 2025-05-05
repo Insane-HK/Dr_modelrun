@@ -1,0 +1,36 @@
+<div class="container mt-5">
+  <h3 class="text-center">Your Feedback</h3>
+  <form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="accuracy" class="form-label"
+        >Was this prediction accurate in your opinion?</label
+      >
+      <select name="accuracy" id="accuracy" class="form-select">
+        <option>Yes, it was accurate</option>
+        <option>No, it was inaccurate</option>
+        <option>Not sure</option>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="comments" class="form-label"
+        >Additional comments (optional):</label
+      >
+      <textarea
+        name="comments"
+        id="comments"
+        class="form-control"
+        rows="3"
+        placeholder="Please share any additional thoughts..."
+      ></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-success">Submit Feedback</button>
+  </form>
+
+  <footer class="text-center mt-4 text-muted small">
+    EyeCheck – Educational Demo © 2025<br />
+    Not for clinical use
+  </footer>
+</div>

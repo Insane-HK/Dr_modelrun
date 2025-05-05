@@ -1,0 +1,145 @@
+mlsaProject/
+│
+├── dr_project/               # Main Django project folder
+│   ├── __init__.py
+│   ├── settings.py           # Django settings (installed apps, media path, etc.)
+│   ├── urls.py               # Main URL routing for the entire project
+│   └── wsgi.py / asgi.py     # Deployment interface (not touched yet)
+│
+├── dr_app/                   # Your custom app handling image uploads + ML prediction
+│   ├── migrations/           # Database migrations
+│   ├── __init__.py
+│   ├── admin.py              # For admin panel (not used yet)
+│   ├── apps.py               # App config
+│   ├── models.py             # (currently empty, could define image model here)
+│   ├── views.py              # Main logic to handle image upload + response
+│   ├── forms.py              # Contains form class for image upload
+│   ├── urls.py               # URL routing specific to dr_app
+│   └── templates/
+│       └── dr_app/
+│           └── upload.html   # Frontend template for form & result
+│
+├── media/                    # Uploaded images will be saved here
+│
+├── manage.py                 # Django's command-line tool
+└── env/                      # Virtual environment (ignore in version control)
+
+settings.py (dr_project/settings.py)
+You edited this to add:
+INSTALLED_APPS = [
+    ...
+    'dr_app',
+]
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+This lets Django know:
+Your custom app exists.
+Where to save uploaded images (media/ folder).
+
+🔹 urls.py (project level: dr_project/urls.py)
+from django.conf import settings
+from django.conf.urls.static import static
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('', include('dr_app.urls')),  # ⬅️ App-level routing
+    path('admin/', admin.site.urls),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+✔️ This:
+
+Loads the routes from your app
+Allows media files (images) to be served while developing
+
+🔹 urls.py (dr_app/urls.py)
+You created this file to route the homepage (/) to your view:
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.upload_image, name='upload_image')
+]
+✔️ This ensures when user visits /, they land on the image upload form.
+
+🔹 forms.py (dr_app/forms.py)
+You created a simple Django form for uploading an image:
+from django import forms
+
+class ImageUploadForm(forms.Form):
+    image = forms.ImageField()
+✔️ This is the form your template uses to accept image input.
+
+🔹 views.py (dr_app/views.py)
+from django.shortcuts import render
+from .forms import ImageUploadForm
+from PIL import Image
+import os
+
+def upload_image(request):
+    prediction = None
+    image_url = None
+
+    if request.method == 'POST':
+        form = ImageUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            image = form.cleaned_data['image']
+            image_path = os.path.join('media', 'image.jpg')
+
+            with open(image_path, 'wb+') as destination:
+                for chunk in image.chunks():
+                    destination.write(chunk)
+
+            # You can call your ML model here
+            prediction = "Dummy Prediction: No DR Detected"
+
+            image_url = '/media/image.jpg'
+
+    else:
+        form = ImageUploadForm()
+
+    return render(request, 'dr_app/upload.html', {
+        'form': form,
+        'prediction': prediction,
+        'image_url': image_url
+    })
+✔️ It:
+
+Renders form on GET
+
+Accepts image on POST
+
+Saves image to media/
+
+Returns a dummy prediction (you’ll connect the real ML model here later)
+
+Passes data to template for display
+
+🔹 upload.html (in templates/dr_app/)
+This is your styled frontend form + result page.
+
+Contains:
+
+Card with "Detect Now" heading
+
+File input + Submit button
+
+Displays result and image if prediction is available
+
+✔️ Currently includes Bootstrap for styling.
+
+🔹 media/
+Django saves uploaded files here
+
+When a user uploads an image, it’s stored as media/image.jpg (for now)
+
+Accessible via /media/image.jpg in browser
+
+🧪 So What Works So Far?
+✅ You have:
+
+A working Django backend
+A form that takes fundus images
+An endpoint that saves the image and shows dummy prediction
+A clean, styled frontend UI
+
